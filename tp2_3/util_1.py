@@ -1,7 +1,7 @@
 #!!~/anaconda/bin python
 # -*- coding: utf-8 -*-
-"""util.py
- utility functions for tp2&3.ipynb
+"""util_1.py
+ utility functions for 2_1_optimisation_combinatoire.ipynb
  """
 
 import matplotlib.pyplot as plt
