@@ -73,5 +73,6 @@ def plot_objet_casier(position_objet, position_casier, attribution, figsize=(20,
                  c='dimgrey',
                  label=r"$O_{" + str(i+1) + r"}\rightarrow B_{" + str(j+1) + r"}$")
 
-    plt.legend(fontsize=15, loc='lower left')
-    plt.show()
+    plt.legend(fontsize=21, loc='lower left')
+    plt.tight_layout()
+    return ax
