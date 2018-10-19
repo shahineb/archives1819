@@ -53,6 +53,7 @@ On note $O_{j}\rightarrow B_{i}$ la relation _"l'objet $j$ est dans la boite $i$
 
 Alors,
 
+
 $$\forall i\enspace \exists!j\enspace / \enspace O_{j}\rightarrow B_{i} \Leftrightarrow \forall i\; \sum_{j}x_{i,j} = 1$$
 
 Et de même,
