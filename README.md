@@ -1,3 +1,4 @@
+
 # Continuous and Discrete Optimization
 OMA Labs 2018-2019
 
@@ -50,7 +51,7 @@ __c)__
 
 ## 2.1. Rangement d'objets
 
-__1) Comment traduire mathématiquement que la boîte <img src="svgs/77a3b857d53fb44e33b53e4c8b68351a.svg?sanitized=True" align=middle width=5.642109000000004pt height=21.602129999999985pt/> contient
+__1) Comment traduire mathématiquement que la boîte <img src="svgs/77a3b857d53fb44e33b53e4c8b68351a.svg?invert_in_darkmode?" align=middle width=5.642109000000004pt height=21.602129999999985pt/> contient
 un objet et un seul et que l’objet <img src="svgs/36b5afebdba34564d884d347484ac0c7.svg?invert_in_darkmode" align=middle width=7.681657500000003pt height=21.602129999999985pt/> se trouve dans une boîte et une seule ?__
 
 On note <img src="svgs/abbcbca79ee28519cba4772bd0a1ad1b.svg?invert_in_darkmode" align=middle width=61.98324pt height=22.381919999999983pt/> la relation _"l'objet <img src="svgs/36b5afebdba34564d884d347484ac0c7.svg?invert_in_darkmode" align=middle width=7.681657500000003pt height=21.602129999999985pt/> est dans la boite <img src="svgs/77a3b857d53fb44e33b53e4c8b68351a.svg?invert_in_darkmode" align=middle width=5.642109000000004pt height=21.602129999999985pt/>"_
