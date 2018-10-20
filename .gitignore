@@ -41,8 +41,9 @@ Thumbs.db
 # Other #
 #########
 results.md
-**/.ipynb_checkpointsß
+**/.ipynb_checkpoints
 README(mikou).md
 results.pdf
 **/data/*
 !**/data/.gitkeep
+**/__pycache__
