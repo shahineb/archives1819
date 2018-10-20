@@ -47,3 +47,4 @@ results.pdf
 **/data/*
 !**/data/.gitkeep
 **/__pycache__
+.gitignore
