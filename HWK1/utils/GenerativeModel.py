@@ -19,10 +19,7 @@ class GenerativeModel(Classifier) :
         pass
 
     def predict(self, X):
-        pred_proba = self.predict_proba(X)
-        pred_proba[pred_proba>0.5]=1
-        pred_proba[pred_proba!=1]=0
-        return pred_proba
+        return super(GenerativeModel, self).predict(X)
 
     def missclassification(self, X, y):
         return super(GenerativeModel, self).missclassification(X, y)

@@ -18,11 +18,6 @@ class LogisticRegression(RegressionModel):
         diag_eta = np.diag(eta*(1-eta))
         Hl_w = -np.matmul(np.matmul(X.T, diag_eta),X)
         return Hl_w
-    @staticmethod
-    def augment_matrix(X):
-        num_samples, num_features = X.shape
-        X_aug = np.hstack([np.ones((num_samples, 1)), X])
-        return X_aug
 
     def __init__(self):
         self.w_ = None
@@ -59,7 +54,7 @@ class LogisticRegression(RegressionModel):
 
     def predict_proba(self, X):
         try :
-            X = LogisticRegression.augment_matrix(X)
+            X = RegressionModel.augment_matrix(X)
             proba_y = logistic.cdf(np.matmul(X,self.w_))
             return proba_y
         except TypeError:
@@ -69,10 +64,7 @@ class LogisticRegression(RegressionModel):
         return super(LogisticRegression, self).missclassification(X, y)
 
     def predict(self, X):
-        y_pred = self.predict_proba(X)
-        y_pred[y_pred>0.5] = 1
-        y_pred[y_pred!=1] = 0
-        return y_pred
+        return super(LogisticRegression, self).predict(X)
 
     def plot_pred(self, X, y, title="", figsize=FIGSIZE):
         fig, ax = plt.subplots(figsize=figsize)
@@ -89,8 +81,8 @@ class LogisticRegression(RegressionModel):
 
         z = self.w_[0]*x1_grid + self.w_[1]*x2_grid
         z = z.reshape(granularity,granularity)
-        ax.contourf(x1_axis, x2_axis, -z, levels=[0,np.inf], colors=COLORS[0], linestyles="dashed", alpha=0.05)
-        ax.contourf(x1_axis, x2_axis, z, levels=[0,np.inf], colors=COLORS[1], linestyles="dashed", alpha=0.05)
+        ax.contourf(x1_axis, x2_axis, -z, levels=[0,np.inf], colors=COLORS[0], linestyles="dashed", alpha=0.1)
+        ax.contourf(x1_axis, x2_axis, z, levels=[0,np.inf], colors=COLORS[1], linestyles="dashed", alpha=0.1)
 
         ax.grid(alpha=0.3)
         ax.set_title(title, fontsize=18)

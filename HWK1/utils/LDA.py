@@ -50,8 +50,8 @@ class LDA(GenerativeModel):
 
         z = orthogonal_vec[0]*x1_grid + orthogonal_vec[1]*x2_grid
         z = z.reshape(granularity,granularity)
-        ax.contourf(x1_axis, x2_axis, -z, levels=[0,np.inf], colors=COLORS[0], linestyles="dashed", alpha=0.05)
-        ax.contourf(x1_axis, x2_axis, z, levels=[0,np.inf], colors=COLORS[1], linestyles="dashed", alpha=0.05)
+        ax.contourf(x1_axis, x2_axis, -z, levels=[0,np.inf], colors=COLORS[0], linestyles="dashed", alpha=0.1)
+        ax.contourf(x1_axis, x2_axis, z, levels=[0,np.inf], colors=COLORS[1], linestyles="dashed", alpha=0.1)
 
         ax.grid(alpha=0.3)
         ax.set_title(title, fontsize=18)

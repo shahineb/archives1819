@@ -53,8 +53,8 @@ class QDA(GenerativeModel):
         foo = [-0.5*np.log(np.linalg.det(sigma))-0.5*np.diagonal(np.matmul(x_1_2-mu, np.matmul(sigma, (x_1_2-mu).T))) for mu, sigma in zip(self.mu_, sigma_inv)]
         z = foo[0]-foo[1]-np.log((1-self.pi_)/self.pi_)
         z = z.reshape(granularity,granularity)
-        ax.contourf(x1_axis, x2_axis, z, levels=[0,np.inf], colors=COLORS[0], linestyles="dashed", alpha=0.07)
-        ax.contourf(x1_axis, x2_axis, -z, levels=[0,np.inf], colors=COLORS[1], linestyles="dashed", alpha=0.07)
+        ax.contourf(x1_axis, x2_axis, z, levels=[0,np.inf], colors=COLORS[0], linestyles="dashed", alpha=0.1)
+        ax.contourf(x1_axis, x2_axis, -z, levels=[0,np.inf], colors=COLORS[1], linestyles="dashed", alpha=0.1)
 
         ax.grid(alpha=0.3)
         ax.set_title(title, fontsize=18)

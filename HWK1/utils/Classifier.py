@@ -17,8 +17,14 @@ class Classifier(object) :
         pass
 
     @abstractmethod
-    def predict(self, X):
+    def predict_proba(self, X):
         pass
+
+    def predict(self, X):
+        pred_proba = self.predict_proba(X)
+        pred_proba[pred_proba>0.5]=1
+        pred_proba[pred_proba!=1]=0
+        return pred_proba
 
     def missclassification(self, X, y):
         n = len(y)
