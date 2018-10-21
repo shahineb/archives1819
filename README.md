@@ -1,1 +1,2 @@
-# probabilistic_graphical_models
+# Probabilistic Graphical Models
+## MVA18-19
