@@ -42,8 +42,9 @@ class LinearRegression(RegressionModel):
     def missclassification(self, X, y):
         return super(LinearRegression, self).missclassification(X, y)
 
-    def plot_pred(self, X, y, title="", figsize=(10,8)):
-        fig, ax = plt.subplots(figsize=figsize)
+    def plot_pred(self, X, y, title="", figsize=FIGSIZE, ax=None):
+        if not ax:
+            fig, ax = plt.subplots(figsize=figsize)
         X_0 = X[y==0]
         X_1 = X[y==1]
         ax.scatter(*X_0.T, marker='o', label = r"$label=0$")
@@ -55,7 +56,7 @@ class LinearRegression(RegressionModel):
         x1_grid, x2_grid = np.meshgrid(x1_axis, x2_axis)
         x_1_2 = np.vstack([x1_grid.reshape(-1), x2_grid.reshape(-1)]).T
 
-        z = self.w_[0]*x1_grid + self.w_[1]*x2_grid
+        z = self.w_[0]*x1_grid + self.w_[1]*x2_grid-0.5
         z = z.reshape(granularity,granularity)
 
         ax.contourf(x1_axis, x2_axis, z, levels=[0,np.inf], colors="steelblue", linestyles="dashed", alpha=0.1)

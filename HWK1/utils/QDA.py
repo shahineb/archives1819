@@ -35,8 +35,9 @@ class QDA(GenerativeModel):
     def missclassification(self, X, y):
         return super(QDA, self).missclassification(X, y)
 
-    def plot_pred(self, X, y, title, figsize=(10,8)):
-        fig, ax = plt.subplots(figsize=figsize)
+    def plot_pred(self, X, y, title, figsize=FIGSIZE, ax=None):
+        if not ax:
+            fig, ax = plt.subplots(figsize=figsize)
         X_0 = X[y==0]
         X_1 = X[y==1]
         ax.scatter(*X_0.T, marker=MARKERS[0], color = COLORS[0], label = r"$label=0$")

@@ -31,7 +31,7 @@ class LogisticRegression(RegressionModel):
         return X, num_features
 
 
-    def fit(self, X, y, beta=0.5, max_iter=400, eps=10e-6):
+    def fit(self, X, y, beta=0.5, max_iter=10000, eps=10e-6):
         X, num_features = self.init_params_(X)
 
         n_iter = 0
@@ -66,8 +66,9 @@ class LogisticRegression(RegressionModel):
     def predict(self, X):
         return super(LogisticRegression, self).predict(X)
 
-    def plot_pred(self, X, y, title="", figsize=FIGSIZE):
-        fig, ax = plt.subplots(figsize=figsize)
+    def plot_pred(self, X, y, title="", figsize=FIGSIZE, ax=None):
+        if not ax:
+            fig, ax = plt.subplots(figsize=figsize)
         X_0 = X[y==0]
         X_1 = X[y==1]
         ax.scatter(*X_0.T, marker=MARKERS[0], label = r"$label=0$")
@@ -81,8 +82,9 @@ class LogisticRegression(RegressionModel):
 
         z = self.w_[0]*x1_grid + self.w_[1]*x2_grid
         z = z.reshape(granularity,granularity)
-        ax.contourf(x1_axis, x2_axis, -z, levels=[0,np.inf], colors=COLORS[0], linestyles="dashed", alpha=0.1)
-        ax.contourf(x1_axis, x2_axis, z, levels=[0,np.inf], colors=COLORS[1], linestyles="dashed", alpha=0.1)
+
+        ax.contourf(x1_axis, x2_axis, z, levels=[0,np.inf], colors=COLORS[0], linestyles="dashed", alpha=0.1)
+        ax.contourf(x1_axis, x2_axis, -z, levels=[0,np.inf], colors=COLORS[1], linestyles="dashed", alpha=0.1)
 
         ax.grid(alpha=0.3)
         ax.set_title(title, fontsize=18)

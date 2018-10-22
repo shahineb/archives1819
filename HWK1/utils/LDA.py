@@ -32,8 +32,9 @@ class LDA(GenerativeModel):
     def missclassification(self, X, y):
         return super(LDA, self).missclassification(X, y)
 
-    def plot_pred(self, X, y, title, figsize=(10,8)):
-        fig, ax = plt.subplots(figsize=figsize)
+    def plot_pred(self, X, y, title, figsize=FIGSIZE, ax=None):
+        if not ax:
+            fig, ax = plt.subplots(figsize=figsize)
         X_0 = X[y==0]
         X_1 = X[y==1]
         ax.scatter(*X_0.T, marker=MARKERS[0], color = COLORS[0], label = r"$label=0$")
@@ -41,6 +42,7 @@ class LDA(GenerativeModel):
 
         sigma_inv = np.linalg.inv(self.sigma_)
         orthogonal_vec = np.matmul(sigma_inv, self.mu_[1]-self.mu_[0])
+        norm_sigma_mu = [0.5*np.inner(np.matmul(sigma_inv, mu), mu) for mu in self.mu_]
 
         x1_axis = np.linspace(*ax.get_xlim())
         x2_axis = np.linspace(*ax.get_ylim())
@@ -48,7 +50,7 @@ class LDA(GenerativeModel):
         x1_grid, x2_grid = np.meshgrid(x1_axis, x2_axis)
         x_1_2 = np.vstack([x1_grid.reshape(-1), x2_grid.reshape(-1)]).T
 
-        z = orthogonal_vec[0]*x1_grid + orthogonal_vec[1]*x2_grid
+        z = np.matmul(orthogonal_vec, x_1_2.T)+norm_sigma_mu[1]-norm_sigma_mu[0]-np.log(self.pi_/(1-self.pi_))
         z = z.reshape(granularity,granularity)
         ax.contourf(x1_axis, x2_axis, -z, levels=[0,np.inf], colors=COLORS[0], linestyles="dashed", alpha=0.1)
         ax.contourf(x1_axis, x2_axis, z, levels=[0,np.inf], colors=COLORS[1], linestyles="dashed", alpha=0.1)
