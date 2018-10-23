@@ -25,13 +25,13 @@ class LogisticRegression(RegressionModel):
 
     def init_params_(self, X):
         num_samples, num_features = X.shape
-        X = np.hstack([np.ones((num_samples, 1)), X])
+        X = RegressionModel.augment_matrix(X)
         self.w_ = np.random.randn(num_features+1)
         self.eta_ = logistic.cdf(np.matmul(X,self.w_))
         return X, num_features
 
 
-    def fit(self, X, y, beta=0.5, max_iter=10000, eps=10e-6):
+    def fit(self, X, y, beta=0., max_iter=10000, eps=10e-6):
         X, num_features = self.init_params_(X)
 
         n_iter = 0
@@ -80,11 +80,11 @@ class LogisticRegression(RegressionModel):
         x1_grid, x2_grid = np.meshgrid(x1_axis, x2_axis)
         x_1_2 = np.vstack([x1_grid.reshape(-1), x2_grid.reshape(-1)]).T
 
-        z = self.w_[0]*x1_grid + self.w_[1]*x2_grid
+        z = self.w_[0] + self.w_[1]*x1_grid + self.w_[2]*x2_grid
         z = z.reshape(granularity,granularity)
 
-        ax.contourf(x1_axis, x2_axis, z, levels=[0,np.inf], colors=COLORS[0], linestyles="dashed", alpha=0.1)
-        ax.contourf(x1_axis, x2_axis, -z, levels=[0,np.inf], colors=COLORS[1], linestyles="dashed", alpha=0.1)
+        ax.contourf(x1_axis, x2_axis, -z, levels=[0,np.inf], colors=COLORS[0], linestyles="dashed", alpha=0.1)
+        ax.contourf(x1_axis, x2_axis, z, levels=[0,np.inf], colors=COLORS[1], linestyles="dashed", alpha=0.1)
 
         ax.grid(alpha=0.3)
         ax.set_title(title, fontsize=18)
