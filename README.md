@@ -1,4 +1,4 @@
-# Reinfocement Learning
+# Reinforcement Learning
 ---
 
 ## MVA18-19
