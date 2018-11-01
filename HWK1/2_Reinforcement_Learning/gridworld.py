@@ -178,7 +178,7 @@ class GridWorld:
 
 grid1 = [
     ['', '', '', 1],
-    ['', 'x', '', 17],
+    ['', 'x', '', -1],
     ['', '', '', '']
 ]
 GridWorld1 = GridWorld(gamma=0.95, grid=grid1)
