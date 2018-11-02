@@ -14,6 +14,7 @@
 
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\R}{\mathbb{R}}
+\newcommand{\indep}{\perp\!\!\!\!\perp}
 
 
 
@@ -33,11 +34,37 @@ Probabilistic Graphical Models}
 \newpage
 
 \fbox{\parbox{19.3cm}{
-	\textbf{Exercise 1.1}
+\textbf{Exercise 1.1}
+	
+The implied factoriZation for any $p\in\mathcal{L}(G)$ is straightfoward from the definition : $$p(t,Z,x,y)=p(t|Z)p(Z|x,y)p(x)p(y)$$
 }}
 
 \fbox{\parbox{19.3cm}{
-	\textbf{Exercise 1.2}
+\textbf{Exercise 1.2}
+
+\textit{(a)} Assuming that $Z$ is binary variable, we can without loss of generality suppose $Z(\Omega)=\{0,1\}$. Let $\pi = \mathbb{P}(Z=0)$, $\forall x, y\in X(\Omega)\times Y(\Omega)$ 
+\begin{align*}
+p(x,y) & = p(x,y|Z=0)\pi + p(x,y|Z=1)(1-\pi) \\
+& =p(x|Z=0)p(y|Z=0)\pi +p(x|Z=1)p(y|Z=1)(1-\pi) & (X\indep Y\mid Z)
+\end{align*}
+Furthermore, 
+\begin{align*}
+p(x,y)& = p(x)p(y) & (X\indep Y) \\
+& = \left(p(x|Z=0)\pi + p(x|Z=1)(1-\pi)\right)\left(p(y|Z=0)\pi + p(y|Z=1)(1-\pi)\right)
+\end{align*}
+Hence, if we note $p_{0}=p(\cdot|Z=0)$ and $p_{1}=p(\cdot|Z=1)$ :
+
+
+\begin{align*}
+p_{0}(x)p_{0}(y)\pi+p_{1}(x)p_{1}(y)(1-\pi) = \left(p_{0}(x)\pi + p_{1}(x)(1-\pi)\right)\left(p_{0}(y)\pi + p_{1}(y)(1-\pi)\right)\\
+\Rightarrow p_{0}(x)p_{0}(y)\pi(1-\pi)+p_{1}(x)p_{1}(y)\pi(1-\pi) - \left(p_{0}(x)p_{1}(y)+p_{1}(x)p_{0}(y)\right)\pi(1-\pi)&=0\\
+\Rightarrow p_{0}(x)(p_{0}(y)-p_{1}(y)) + p_{1}(x)(p_{1}(y)-p_{0}(y)) &=0 \\
+\Rightarrow (p_{0}(x)-p_{1}(x))(p_{0}(y)-p_{1}(y)) &=0
+\end{align*}
+
+Thus, $p(x|Z=0)=p(x|Z=1)$ or $p(y|Z=0)=p(y|Z=1)$
+
+
 }}
 
 
