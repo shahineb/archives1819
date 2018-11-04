@@ -3,7 +3,7 @@ import numpy as np
 
 class KMeans(object):
 
-    def __init__(self, nr_clusters, init='random', n_init=1, max_iter=300, eps=1e-4):
+    def __init__(self, nr_clusters, threshold=1000, init='random', n_init=10, max_iter=300):
         """
 
         Parameters
@@ -15,8 +15,6 @@ class KMeans(object):
             number of kmeans executions to take when fitting
         max_iter : int
             max number of iterations allowed
-        eps : float
-            threshold for convergence
 
         Attributes
         ----------
@@ -27,6 +25,8 @@ class KMeans(object):
             (nr_sample)
             cluster affected to each sample
         distorsion_: float
+        threshold : float
+            threshold for convergence
         inertia_: float
             difference between two successive distorsion values
         n_iter_: int
@@ -36,7 +36,7 @@ class KMeans(object):
         self.init_ = init
         self.n_init_ = n_init
         self.max_iter_ = max_iter
-        self.eps_ = eps
+        self.threshold_ = threshold
         self.centroids_ = None
         self.labels_ = None
         self.distorsion_ = None
@@ -60,7 +60,7 @@ class KMeans(object):
         if self.init_ == 'random':
             centroids = (up_bound - low_bound) * np.random.rand(self.nr_clusters_, p) + low_bound
         elif self.init_ == 'k-means++':
-            # TODO
+            # TODO implement kmeans++
             pass
         else:
             raise RuntimeError("Missing intialization method")
@@ -86,25 +86,29 @@ class KMeans(object):
 
             n, p, centroids, labels = self.initialize_(X)
             conv_criterion = True
+            distorsion = 0
 
             while conv_criterion and self.n_iter_ < self.max_iter_:
 
                 # Affect each sample to the cluster owned by the closest centroid
-                distorsion = 0
+                conv_criterion = distorsion
                 for i, x in enumerate(X):
                     dist2centroids = np.linalg.norm(x - centroids, axis=1)
                     labels[i] = np.argmin(dist2centroids)
-                    distorsion += np.min(dist2centroids)
-
-                conv_criterion = centroids
+                    distorsion += dist2centroids[int(labels[i])]
 
                 # Recompute centroids values given new samples repartition
                 for k in range(self.nr_clusters_):
-                    X[np.where(labels == k)[0]]
                     centroids[k] = np.mean(X[np.where(labels == k)[0]], axis=0)
+                    # Solve case when no sample is affected to a centroid
+                    if np.isnan(centroids).any():
+                        n, p, centroids, labels = self.initialize_(X)
+                        distorsion = 0
+                        conv_criterion = np.inf
+                        self.n_iter_ = 0
 
-                inertia = np.linalg.norm(conv_criterion - centroids, ord=np.inf)
-                conv_criterion = inertia > self.eps_
+                inertia = np.abs(conv_criterion - distorsion)
+                conv_criterion = inertia > self.threshold_
                 self.n_iter_ += 1
 
             # if last loop performed better than previous best performer

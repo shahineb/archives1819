@@ -38,6 +38,21 @@ class IsotropicGM(GaussianMixtureModel):
         super(IsotropicGM, self).__init__(k, initialization)
         self.nu_ = None
 
+    def compute_estimators_(self, X):
+        '''Compute the MLE of the model parameters'''
+        self.pi_ = np.mean(self.cond_prob_, axis=0)
+        self.mu_ = [np.sum(X.T * self.cond_prob_[:, j], axis=1) / np.sum(self.cond_prob_[:, j]) for j in range(self.k_)]
+        self.nu_ = []
+
+        nr_feature = X.shape[1]
+        for j in range(self.k_):
+            foo = np.array([tau * np.inner((x - self.mu_[j]), (x - self.mu_[j]))
+                            for tau, x in zip(self.cond_prob_[:, j], X)])
+            foo = np.sum(foo) / np.sum(self.cond_prob_[:, j])
+            foo = foo / nr_feature
+            self.nu_ += [foo]
+        self.Sigma_ = np.array([nu * np.eye(nr_feature) for nu in self.nu_])
+
     def fit(self, X, eps=1e-4, max_iter=100):
         """ Find the parameters pi_, mu_ and nu_
         that better fit the data
@@ -51,24 +66,9 @@ class IsotropicGM(GaussianMixtureModel):
         -----
         self
         """
-        def compute_estimators_(X):
-            '''Compute the MLE of the model parameters'''
-            self.pi_ = np.mean(self.cond_prob_, axis=0)
-            self.mu_ = [np.sum(X.T * self.cond_prob_[:, j], axis=1) / np.sum(self.cond_prob_[:, j]) for j in range(self.k_)]
-            self.nu_ = []
-
-            nr_feature = X.shape[1]
-            for j in range(self.k_):
-                foo = np.array([tau * np.inner((x - self.mu_[j]), (x - self.mu_[j]))
-                                for tau, x in zip(self.cond_prob_[:, j], X)])
-                foo = np.sum(foo) / np.sum(self.cond_prob_[:, j])
-                foo = foo / nr_feature
-                self.nu_ += foo
-            self.Sigma_ = np.array([nu * np.eye(nr_feature) for nu in self.nu_])
-
         # intialize
-        super(IsotropicGM, self).initialize_(nr_clusters=self.k_)
-        compute_estimators_(X)
+        super(IsotropicGM, self).initialize_(X)
+        self.compute_estimators_(X)
 
         n_iter = 0
         l_c = 0
@@ -79,37 +79,8 @@ class IsotropicGM(GaussianMixtureModel):
 
             super(IsotropicGM, self).compute_condition_prob_matrix_(X)
             l_c = super(IsotropicGM, self).compute_expectation_()
-            compute_estimators_(X)
+            self.compute_estimators_(X)
 
             conv_criteria = np.abs(conv_criteria - l_c) < eps
 
         self.labels_ = np.argmax(self.cond_prob_, axis=1)
-
-    def predict_proba(self, X):
-        """ Predict probability vector for X
-
-        Parameters:
-        -----------
-        X: (n, p) np.array
-
-        Returns:
-        -----
-        proba: (n, k) np.array
-        """
-        return super(IsotropicGM, self).predict_proba(X)
-
-    def predict(self, X):
-        """ Predict labels for X
-
-        Parameters:
-        -----------
-        X: numpy.array
-            (nr_sample, nr_feature)
-        Returns:
-        -----
-        label affectation
-        """
-        return super(IsotropicGM, self).predict(X)
-
-    def missclassification(self, X, y):
-        return super(IsotropicGM, self).missclassification(X, y)
