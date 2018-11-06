@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from utils.KMeans import KMeans
 from utils.IsotropicGM import IsotropicGM
-from utils.GaussianMixtureModel import GaussianMixtureModel, FIGSIZE
+from utils.GaussianMixtureModel import GaussianMixtureModel
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -37,14 +37,14 @@ for i in range(n_row):
         ax[i][j].set_title(r"$J = $" + distortion + " | " + nr_iterations + " iterations", size=16)
         ax[i][j].grid(alpha=0.3)
 plt.tight_layout()
-plt.savefig("docs/img/kmeans.png")
+plt.savefig("docs/img/Kmeans.png")
 plt.close()
 
 
 # Iso GMM
 iso_gmm = IsotropicGM(k=4, initialization="kmeans")
 iso_gmm.fit(train)
-fig, ax = plt.subplots(figsize=FIGSIZE)
+fig, ax = plt.subplots(figsize=(12, 12))
 
 title = "Training set | Isotropic MM with 90% confidence interval"
 iso_gmm.plot_pred(X=train,
@@ -54,7 +54,7 @@ iso_gmm.plot_pred(X=train,
                   ax=ax)
 ax.set_aspect('equal')
 plt.tight_layout()
-plt.savefig("docs/img/3_b_isotropic_gm.png")
+plt.savefig("docs/img/IsotropicGMM.png")
 plt.close()
 
 
@@ -62,7 +62,7 @@ plt.close()
 gmm = GaussianMixtureModel(k=4, initialization="kmeans")
 gmm.fit(train)
 
-fig, ax = plt.subplots(figsize=FIGSIZE)
+fig, ax = plt.subplots(figsize=(12, 12))
 
 title = "Training set | GMM with 90% confidence interval"
 gmm.plot_pred(X=train,
@@ -72,5 +72,31 @@ gmm.plot_pred(X=train,
               ax=ax)
 ax.set_aspect('equal')
 plt.tight_layout()
-plt.savefig("docs/img/3_c_gmm.png")
+plt.savefig("docs/img/GMM.png")
 plt.close()
+
+
+# Loglikelihoods
+log_likelihoods = {'train':{}, 'test':{}}
+
+iso_gmm.compute_estimators_(train)
+iso_gmm.compute_multivariate_normal_matrix(train)
+log_likelihoods['train']['Isotropic'] = iso_gmm.compute_expectation_()/len(train)
+
+iso_gmm.compute_estimators_(test)
+iso_gmm.compute_multivariate_normal_matrix(test)
+log_likelihoods['test']['Isotropic'] = iso_gmm.compute_expectation_()/len(test)
+
+
+gmm.compute_estimators_(train)
+gmm.compute_multivariate_normal_matrix(train)
+log_likelihoods['train']['General'] = gmm.compute_expectation_()/len(train)
+
+
+gmm.compute_estimators_(test)
+gmm.compute_multivariate_normal_matrix(test)
+log_likelihoods['test']['General'] = gmm.compute_expectation_()/len(test)
+
+df = pd.DataFrame(log_likelihoods)
+df = df.round(3)
+df.to_latex("docs/tex/log_likelihoods.tex")

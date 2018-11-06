@@ -52,13 +52,19 @@ class GaussianMixtureModel(object):
         self.pi_ = None
         self.cond_prob_ = None
         self.labels_ = None
+        
+    def compute_multivariate_normal_matrix(self, X):
+        """Computes the matrix of gaussian pdf evaluation on each sample for each
+            distribution
+        """
+        self.N_ = np.array([stats.multivariate_normal(self.mu_[k], self.Sigma_[k]).pdf(X) for k in range(self.k_)]).T
 
     def compute_condition_prob_matrix_(self, X):
         '''Compute the conditional probability matrix
         shape: (nr_sample, k_)
         '''
         n, p = X.shape
-        self.N_ = np.array([stats.multivariate_normal(self.mu_[k], self.Sigma_[k]).pdf(X) for k in range(self.k_)]).T
+        self.compute_multivariate_normal_matrix(X)
         self.cond_prob_ = self.N_ * self.pi_
         self.cond_prob_ = self.cond_prob_ / np.sum(self.cond_prob_, axis=1)[:, np.newaxis]
         return self.cond_prob_
@@ -67,7 +73,7 @@ class GaussianMixtureModel(object):
         '''Compute the expectation to check increment'''
         E_log_likelihood = np.sum(self.cond_prob_ * np.log(self.N_)) + np.sum(self.cond_prob_ * np.log(self.pi_))
         return E_log_likelihood
-
+    
     def initialize_(self, X):
         n, p = X.shape
         # kmeans initialization
