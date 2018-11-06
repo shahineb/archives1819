@@ -59,9 +59,26 @@ class KMeans(object):
 
         if self.init_ == 'random':
             centroids = (up_bound - low_bound) * np.random.rand(self.nr_clusters_, p) + low_bound
+
         elif self.init_ == 'k-means++':
-            # TODO implement kmeans++
-            pass
+            centroids = np.empty((self.nr_clusters_, p))
+            centroids_index = []
+            i0 = np.random.randint(n) #set the first centroid at random
+            centroids[0] = X[i0]
+            centroids_index.append(i0)
+            for k in range(1,self.nr_clusters_): # set others wrt k++
+                probas = np.zeros(n)
+                for i, x in enumerate(X):
+                    dist2centroids = np.linalg.norm(x - centroids[0:k], axis=1)
+                    probas[i] = np.min(dist2centroids)**2
+                sum_proba = np.sum(probas)
+                for i in range(n):
+                    probas[i] = float(probas[i]/sum_proba)
+                i_newcentroid = np.random.choice(n,p = probas)
+                while i_newcentroid in centroids_index:
+                    i_newcentroid = np.random.choice(n,p = probas)
+                centroids[k] = X[i_newcentroid]
+
         else:
             raise RuntimeError("Missing intialization method")
 
