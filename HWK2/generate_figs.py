@@ -77,25 +77,25 @@ plt.close()
 
 
 # Loglikelihoods
-log_likelihoods = {'train': {}, 'test': {}}
+log_likelihoods = {'train':{}, 'test':{}}
 
 iso_gmm.compute_estimators_(train)
 iso_gmm.compute_multivariate_normal_matrix(train)
-log_likelihoods['train']['Isotropic'] = iso_gmm.compute_expectation_() / len(train)
+log_likelihoods['train']['Isotropic'] = iso_gmm.compute_expectation_()/len(train)
 
 iso_gmm.compute_estimators_(test)
 iso_gmm.compute_multivariate_normal_matrix(test)
-log_likelihoods['test']['Isotropic'] = iso_gmm.compute_expectation_() / len(test)
+log_likelihoods['test']['Isotropic'] = iso_gmm.compute_expectation_()/len(test)
 
 
 gmm.compute_estimators_(train)
 gmm.compute_multivariate_normal_matrix(train)
-log_likelihoods['train']['General'] = gmm.compute_expectation_() / len(train)
+log_likelihoods['train']['General'] = gmm.compute_expectation_()/len(train)
 
 
 gmm.compute_estimators_(test)
 gmm.compute_multivariate_normal_matrix(test)
-log_likelihoods['test']['General'] = gmm.compute_expectation_() / len(test)
+log_likelihoods['test']['General'] = gmm.compute_expectation_()/len(test)
 
 df = pd.DataFrame(log_likelihoods)
 df = df.round(3)
