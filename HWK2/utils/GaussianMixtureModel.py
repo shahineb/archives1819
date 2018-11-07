@@ -52,7 +52,7 @@ class GaussianMixtureModel(object):
         self.pi_ = None
         self.cond_prob_ = None
         self.labels_ = None
-        
+
     def compute_multivariate_normal_matrix(self, X):
         """Computes the matrix of gaussian pdf evaluation on each sample for each
             distribution
@@ -73,7 +73,7 @@ class GaussianMixtureModel(object):
         '''Compute the expectation to check increment'''
         E_log_likelihood = np.sum(self.cond_prob_ * np.log(self.N_)) + np.sum(self.cond_prob_ * np.log(self.pi_))
         return E_log_likelihood
-    
+
     def initialize_(self, X):
         n, p = X.shape
         # kmeans initialization
