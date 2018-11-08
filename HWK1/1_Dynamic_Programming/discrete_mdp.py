@@ -1,6 +1,7 @@
 import numpy as np
 from utils import *
 
+
 class DiscreteMDP(object):
 
     def __init__(self, states_names, action_names, transition_proba, reward, optimal_policy=None, gamma=0.95):
@@ -41,8 +42,6 @@ class DiscreteMDP(object):
         self.policy_ = None
         self.iteration_ = None
 
-
-
     def reset(self, initial_policy=None):
         """
         Returns:
@@ -58,16 +57,12 @@ class DiscreteMDP(object):
             self.policy_ = np.random.choice(np.arange(self.n_actions_), size=self.n_states_)
         return initial_state
 
-
-
-
     def compute_optimal_policy(self):
         """returns policy maximizing state value function
         """
-        foo = self.reward_ + self.gamma_*np.sum(self.transition_proba_*self.value_, axis=2)
+        foo = self.reward_ + self.gamma_ * np.sum(self.transition_proba_ * self.value_, axis=2)
         optimal_policy = np.argmax(foo, axis=1)
         return optimal_policy
-
 
     def update_state_value(self):
         """Updates state value function by applying to it the
@@ -77,7 +72,6 @@ class DiscreteMDP(object):
                                        self.transition_proba_,
                                        self.value_,
                                        self.gamma_)
-
 
     def update_policy(self):
         """Updates state value function and policy using direct computation
@@ -91,13 +85,11 @@ class DiscreteMDP(object):
         transition_proba = self.transition_proba_[indexes]
 
         # Compute updated value
-        foo = np.eye(self.n_states_)-self.gamma_*transition_proba
+        foo = np.eye(self.n_states_) - self.gamma_ * transition_proba
         self.value_ = np.matmul(np.linalg.inv(foo), reward)
 
         # Compute new policy
         self.policy_ = self.compute_optimal_policy()
-
-
 
     def policy_evaluation(self, policy):
         """returns state value computed for a given policy
@@ -106,9 +98,8 @@ class DiscreteMDP(object):
 
         for state, action in enumerate(policy):
             value[state] = self.reward_[state, action]
-            value[state] += self.gamma_*np.sum(self.transition_proba_[state, action]*self.value_)
+            value[state] += self.gamma_ * np.sum(self.transition_proba_[state, action] * self.value_)
         return value
-
 
     def run_value_iteration(self, eps=0.01, max_iter=10000, track=False):
         """Runs value iteration
@@ -149,22 +140,19 @@ class DiscreteMDP(object):
 
             self.update_state_value()
             self.iteration_ += 1
-            conv_criterion = np.linalg.norm(conv_criterion-self.value_, ord=np.inf) > eps
+            conv_criterion = np.linalg.norm(conv_criterion - self.value_, ord=np.inf) > eps
 
             if track:
                 values_history += [self.value_]
 
-        optimal_policy = self.compute_optimal_policy() # optimal policy obtained by VI
+        optimal_policy = self.compute_optimal_policy()  # optimal policy obtained by VI
 
-        if track :
-            optimal_value = self.policy_evaluation(self.optimal_policy_) # optimal value wrt to guessed optimal policy
-            distance_to_optimal = [np.linalg.norm(x-optimal_value, ord=np.inf) for x in values_history]
+        if track:
+            optimal_value = self.policy_evaluation(self.optimal_policy_)  # optimal value wrt to guessed optimal policy
+            distance_to_optimal = [np.linalg.norm(x - optimal_value, ord=np.inf) for x in values_history]
             return optimal_policy, distance_to_optimal, n_iter
         else:
             return optimal_policy
-
-
-
 
     def run_policy_iteration(self, initial_policy=None, eps=0.01, max_iter=10000):
         """Runs policy iteration
@@ -183,11 +171,11 @@ class DiscreteMDP(object):
         conv_criterion = True
         n_iter = 0
 
-        while conv_criterion and n_iter < max_iter :
+        while conv_criterion and n_iter < max_iter:
             n_iter += 1
             conv_criterion = self.value_
 
             self.update_policy()
             self.iteration_ += 1
-            conv_criterion = np.linalg.norm(conv_criterion-self.value_, ord=np.inf) > eps
+            conv_criterion = np.linalg.norm(conv_criterion - self.value_, ord=np.inf) > eps
         return self.policy_

@@ -1,8 +1,10 @@
+### Note for `main_tp1_ex2.py`
+
 The code has been tested using python 2.7.14 and 3.6.1 provided by anaconda (on linux)
 
 Attention: for python 2.7 you need future
 
-Python 3.6
+Python 2.7
 ==========
 conda create -n py27 python=2.7 anaconda
 conda activate py27

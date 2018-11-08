@@ -43,9 +43,9 @@ state = 0
 fps = 1
 for i in range(5):
         action = np.random.choice(env.state_actions[state])
-        nexts, reward, term = env.step(state,action)
+        nexts, reward, term = env.step(state, action)
         state = nexts
-        time.sleep(1./fps)
+        time.sleep(1. / fps)
 
 ################################################################################
 # You can also visualize the q-function using render_q

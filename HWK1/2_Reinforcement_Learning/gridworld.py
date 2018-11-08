@@ -6,7 +6,6 @@ import tkinter.font as tkFont
 import copy
 
 
-
 class GridWorld:
     def __init__(self, gamma=0.95, grid=None, render=False):
         self.grid = grid
