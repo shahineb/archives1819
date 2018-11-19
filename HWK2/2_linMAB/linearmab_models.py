@@ -7,7 +7,7 @@ class LinearMABModel(object):
         self.noise = noise
 
     def reward(self, action):
-        assert 0<= action < self.n_actions, "{} not in 0 .. {}".format(action, self.n_actions)
+        assert 0 <= action < self.n_actions, "{} not in 0 .. {}".format(action, self.n_actions)
         reward = np.dot(self.features[action], self.real_theta) + self.noise * self.local_random.randn(1)
         return reward
 
@@ -22,6 +22,11 @@ class LinearMABModel(object):
     @property
     def n_actions(self):
         return self.features.shape[0]
+
+    def estimate_best_arm(self, A, alpha, theta_hat):
+        beta = alpha * np.sqrt(np.diagonal(self.features.dot(np.linalg.inv(A)).dot(self.features.T)))
+        D = np.dot(self.features, theta_hat) + beta
+        return np.argmax(D)
 
 
 class ToyLinearModel(LinearMABModel):

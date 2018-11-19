@@ -1,8 +1,7 @@
 from abc import ABCMeta, abstractmethod
 import numpy as np
 import arms
-from SMAB import SMAB
-from scipy.special import beta
+from MAB import SMAB
 
 
 class ExplorationMAB(object):
@@ -40,6 +39,19 @@ class ExplorationMAB(object):
         # TODO : check if run be promoted to super class
         pass
 
+    def compute_mean_regret(self, nr_simulation):
+        # Get mean of best arm
+        mean_max = np.max([arm.mean for arm in self.MAB_.arms_])
+
+        # compute regret array
+        all_rew = []
+        for i in range(nr_simulation):
+            rew, _ = self.run()
+            all_rew += [rew]
+        all_rew = np.array(all_rew)
+        reg = mean_max * np.arange(1, self.T_ + 1) - np.mean(np.cumsum(all_rew, axis=1), axis=0)
+        return reg
+
 
 class NaiveExploration(ExplorationMAB):
 
@@ -65,11 +77,11 @@ class NaiveExploration(ExplorationMAB):
         arm_idx = np.argmax(self.empiric_mean_)
 
         # Draw chosen arm
-        arm_draw = self.MAB_[arm_idx].sample()
+        arm_draw = self.MAB_.arms_[arm_idx].sample()
 
         # Update records
-        self.draws_[arm_idx, t + 1] = 1
-        self.rewards_[arm_idx, t + 1] = arm_draw
+        self.draws_[arm_idx, t] = 1
+        self.rewards_[arm_idx, t] = arm_draw
 
     def run(self):
         # Initialize Bandit
@@ -80,7 +92,7 @@ class NaiveExploration(ExplorationMAB):
             self.iterate(t)
 
         # Define output sequences
-        rew_sequence = np.sum(self.reward_, axis=0)
+        rew_sequence = np.sum(self.rewards_, axis=0)
         draws_sequence = np.argmax(self.draws_, axis=0)
 
         return rew_sequence, draws_sequence
@@ -136,11 +148,11 @@ class UCB1(ExplorationMAB):
         arm_idx = np.argmax(upper_confidence_bounds)
 
         # Draw chosen arm
-        arm_draw = self.MAB_[arm_idx].sample()
+        arm_draw = self.MAB_.arms_[arm_idx].sample()
 
         # Update records
-        self.draws_[arm_idx, t + 1] = 1
-        self.rewards_[arm_idx, t + 1] = arm_draw
+        self.draws_[arm_idx, t] = 1
+        self.rewards_[arm_idx, t] = arm_draw
         cum_reward_arm = np.sum(self.rewards_[arm_idx, :t + 1], axis=0)
         cum_draws_arm = np.sum(self.draws_[arm_idx, :t + 1], axis=0)
         self.empiric_mean_[arm_idx] = cum_reward_arm / cum_draws_arm
@@ -154,7 +166,7 @@ class UCB1(ExplorationMAB):
             self.iterate(t)
 
         # Define output sequences
-        rew_sequence = np.sum(self.reward_, axis=0)
+        rew_sequence = np.sum(self.rewards_, axis=0)
         draws_sequence = np.argmax(self.draws_, axis=0)
 
         return rew_sequence, draws_sequence
@@ -163,7 +175,7 @@ class UCB1(ExplorationMAB):
 class ThompsonSampling(ExplorationMAB):
 
     @staticmethod
-    def get_posterior(cum_draws, cum_rewards):
+    def get_bernoulli_posteriors(cum_draws, cum_rewards):
         """Computes posteriors of an arm for
         bernoulli-beta posterior
 
@@ -176,7 +188,7 @@ class ThompsonSampling(ExplorationMAB):
         """
         a = cum_rewards + 1
         b = cum_draws - cum_rewards + 1
-        posterior = beta(a, b)
+        posterior = np.random.beta(a, b)
         return posterior
 
     def __init__(self, MAB, T):
@@ -189,30 +201,36 @@ class ThompsonSampling(ExplorationMAB):
         self.draws_ = np.zeros((nr_arms, self.T_))
         self.rewards_ = np.zeros((nr_arms, self.T_))
 
-    def sample_reward(self, arm_idx, t):
-        arm = self.MAB_.arms_[arm_idx]
-        if isinstance(arm, arms.ArmBernoulli):
-            cum_reward_t = np.sum(self.rewards_[arm_idx, :t])
-            cum_draws_t = np.sum(self.draws_[arm_idx, :t])
-            posterior = self.get_posteriors(cum_draws_t, cum_reward_t)
-        else:
-            # TODO : implement general sample reward TS
-            pass
+    def get_arm_posterior_(self, arm_idx, t):
+        cum_reward_t = np.sum(self.rewards_[arm_idx, :t])
+        cum_draws_t = np.sum(self.draws_[arm_idx, :t])
+        posterior = self.get_bernoulli_posteriors(cum_draws_t, cum_reward_t)
         return posterior
+
+    def sample_reward_(self, arm_idx):
+        if isinstance(self.MAB_.arms_[arm_idx], arms.ArmBernoulli):
+            arm_draw = self.MAB_.arms_[arm_idx].sample()
+        else:
+            rew_observed = self.MAB_.arms_[arm_idx].sample()
+            try:
+                arm_draw = np.random.binomial(1, rew_observed)
+            except ValueError:
+                raise ValueError("Distribution support exceeds [0,1]")
+        return arm_draw
 
     def iterate(self, t):
         # Compute posteriors
-        posteriors = np.array([self.sample_reward(i, t) for i in range(self.nr_arms_)])
+        posteriors = np.array([self.get_arm_posterior_(i, t) for i in range(self.nr_arms_)])
 
         # Select maximizing arm
         arm_idx = np.argmax(posteriors)
 
         # Draw chosen arm
-        arm_draw = self.MAB_[arm_idx].sample()
+        arm_draw = self.sample_reward_(arm_idx)
 
         # Update records
-        self.draws_[arm_idx, t + 1] = 1
-        self.rewards_[arm_idx, t + 1] = arm_draw
+        self.draws_[arm_idx, t] = 1
+        self.rewards_[arm_idx, t] = arm_draw
 
     def run(self):
         # Initialize Bandit
@@ -223,7 +241,7 @@ class ThompsonSampling(ExplorationMAB):
             self.iterate(t)
 
         # Define output sequences
-        rew_sequence = np.sum(self.reward_, axis=0)
+        rew_sequence = np.sum(self.rewards_, axis=0)
         draws_sequence = np.argmax(self.draws_, axis=0)
 
         return rew_sequence, draws_sequence

@@ -10,9 +10,9 @@ class SMAB(object):
     arms : list[AbstractArm]
         Bandit's arm-set
     """
-
     def __init__(self, arms):
         self.arms_ = arms
+        self.nr_arms_ = len(arms)
 
     def get_arm(self, arm_index):
         try:
@@ -49,3 +49,15 @@ class BernoulliBandit(SMAB):
             return self.arms_[arm_index]
         except IndexError:
             raise IndexError("Unexisting arm")
+
+    def complexity(self):
+        # Get mean of best arm
+        arms_means = np.array([arm.mean for arm in self.arms_])
+        max_arm_idx = np.argmax(arms_means)
+        mean_max = self.arms_[max_arm_idx].mean
+
+        # Compute complexity
+        other_means = np.delete(arms_means, max_arm_idx)
+        kl_div = other_means * np.log(other_means / mean_max) + (1 - other_means) * np.log((1 - other_means) / (1 - mean_max))
+        C = np.sum((mean_max - other_means) / kl_div)
+        return C

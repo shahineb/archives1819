@@ -6,3 +6,7 @@
   - Discrete Markov Decision Process
   - Policy Evaluation with First-visit Monte Carlo
   - Policy Optimization with Q-learning
+
+- HWK2
+  - Stochastic Multi-Armed Bandit
+  - Linear Bandit
