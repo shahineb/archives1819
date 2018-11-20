@@ -254,9 +254,11 @@ class my_GMM(object):
         a the model
         """
         nr_param_latent = self.k_
-        nr_param_mean = np.prod(np.array(self.mu_).shape)
-        nr_param_covariance = np.prod(np.array(self.Sigma_).shape)
-        nr_param = nr_param_latent + nr_param_mean + nr_param_covariance
+        n_feature = len(self.mu_)
+
+        nr_param_mean = n_feature
+        nr_param_covariance = n_feature * (n_feature - 1) / 2
+        nr_param = nr_param_latent * (1 + nr_param_mean + nr_param_covariance)
         return nr_param
 
     def expected_log_likelihood(self, X):
