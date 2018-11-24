@@ -15,7 +15,7 @@ def gen_multivariate_normal(n_sample, mean, covariance):
         list of covariance matrix for multivariate normal distribution,
         the matrix being of size (n_feature, n_feature)
     """
-    theta = zip(mean, covariance)
+    theta = list(zip(mean, covariance))
     X = np.array([np.random.multivariate_normal(theta[idx][0], theta[idx][1]) for idx in np.random.choice(len(theta), n_sample)])
     return X
 
