@@ -12,7 +12,8 @@
   - K-Means
   - Gaussian Mixture Model
 
-
+- HWK3
+  - HMM
   ---
 
 ## Environment Setup

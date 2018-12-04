@@ -1,18 +1,12 @@
-from KMeans import KMeans
 import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
-from utils.KMeans import KMeans
 from utils.GaussianMixtureModel import GaussianMixtureModel, FIGSIZE, MARKER, MARKER_COLOR, CMAP, MARKER_SIZE
 
-FIGSIZE = (12, 8)
-CMAP = plt.cm.Dark2
-MARKER = 'D'
-MARKER_SIZE = 150
-MARKER_COLOR = 'crimson'
 ALPHA = 0.4
 QUANTILE = 0.9
+
 
 class myHMM(object):
 
@@ -40,11 +34,11 @@ class myHMM(object):
         Sigma_: numpy.array
             (k_, nr_feature, nr_feature)
             array containing covariance matrix
-        alpha_: numpy.array
-            (nr_sample,)   #############
+        logalpha_: numpy.array
+            (nr_sample, k_)
             alpha messages
-        beta_: numpy.array
-            (nr_sample,)        #######################
+        logbeta_: numpy.array
+            (nr_sample, k_)
             beta messages
         cond_prob_: numpy.array
             (nr_sample, k_)
@@ -60,8 +54,8 @@ class myHMM(object):
         self.A_ = None
         self.mu_ = None
         self.Sigma_ = None
-        self.alpha_ = None
-        self.beta_ = None
+        self.logalpha_ = None
+        self.logbeta_ = None
         self.cond_prob_ = None
         self.cond_prob_bis_ = None
 
@@ -71,92 +65,86 @@ class myHMM(object):
         """
         self.N_ = np.array([stats.multivariate_normal(self.mu_[k], self.Sigma_[k]).pdf(X) for k in range(self.k_)]).T
 
-    ########################## Question 1 #######################
+    # Question 1 #######################
     def compute_messages(self, X):
         """Computes alpha and beta messages, stored as log for computation issues
         """
         nr_sample = np.shape(X)[0]
 
-        alpha = np.zeros((nr_sample,self.k_))
+        alpha = np.zeros((nr_sample, self.k_))
 
-        #alpha for the initial states
+        # alpha for the initial states
         alpha[0] = np.log(self.pi0_) + np.log(self.N_[0])
 
-        #alpha for all the other states
+        # alpha for all the other states
         for t in range(nr_sample):
-            va = np.log(self.A_) + alpha[t-1]
-            max_va =  np.max(va, axis=1)
+            va = np.log(self.A_) + alpha[t - 1]
+            max_va = np.max(va, axis=1)
             alpha[t] = np.log(self.N_[t]) + max_va + np.log(np.sum(np.exp(va - max_va[:, np.newaxis]), axis=1))
 
-        self.alpha_ = alpha
+        self.logalpha_ = alpha
 
         #################################################
 
-        beta = np.zeros((nr_sample,self.k_))
+        beta = np.zeros((nr_sample, self.k_))
 
-        #beta for the initial states
-        beta[-1] = np.zeros(self.k_) #useless after the initialization
+        # beta for the initial states
+        beta[-1] = np.zeros(self.k_)  # useless after the initialization
 
-        #beta for all the other states
-        for t in range(nr_sample-2, -1, -1):
-            va = np.log(self.A_) + beta[t+1] + np.log(self.N_[t+1])
-            max_va = np.max(va,axis=1)
+        # beta for all the other states
+        for t in range(nr_sample - 2, -1, -1):
+            va = np.log(self.A_) + beta[t + 1] + np.log(self.N_[t + 1])
+            max_va = np.max(va, axis=1)
             beta[t] = max_va + np.log(np.sum(np.exp(va - max_va[:, np.newaxis]), axis=1))
 
-        self.beta_ = beta
-
+        self.logbeta_ = beta
 
     def compute_condition_prob_matrix_(self, X):
         '''Compute the conditional probability matrix cond_prob_ and cond_prob_bis_
         '''
         nr_sample = np.shape(X)[0]
 
-        maxi = np.max(self.alpha_ + self.beta_) #maximum value on the whole array
-        proba_y_log = maxi + np.log(np.sum(np.exp(self.alpha_+self.beta_-maxi)))
+        maxi = np.max(self.logalpha_ + self.logbeta_)  # maximum value on the whole array
+        proba_y_log = maxi + np.log(np.sum(np.exp(self.logalpha_ + self.logbeta_ - maxi)))
 
-        self.cond_prob_ = np.exp(self.alpha_ + self.beta_ - proba_y_log)
+        self.cond_prob_ = np.exp(self.logalpha_ + self.logbeta_ - proba_y_log)
 
         ##########################################
 
-        for t in range(nr_sample-1):
-            for i in range(self.k_): #i codes for z_t (and implicitely j for z_t+1)
-                va = np.full(self.k_,self.alpha_[t,i]) + self.beta_[t+1] + np.log(self.A_[:,i]) + np.log(self.N_[t+1])
-                self.cond_prob_bis_[t,i,:] = np.exp(va-proba_y_log)
+        for t in range(nr_sample - 1):
+            for i in range(self.k_):  # i codes for z_t (and implicitely j for z_t+1)
+                va = np.full(self.k_, self.logalpha_[t, i]) + self.logbeta_[t + 1] + np.log(self.A_[:, i]) + np.log(self.N_[t + 1])
+                self.cond_prob_bis_[t, i, :] = np.exp(va - proba_y_log)
 
+    # Question 4 ##################
 
-    ########################## Question 4 ##################
-
-    def viterbi(self,X): # we divide the algorithm in two steps in order to keep trace of the most likely states
+    def viterbi(self, X):  # we divide the algorithm in two steps in order to keep trace of the most likely states
 
         nr_sample = np.shape(X)[0]
 
-        M = np.zeros((nr_sample, self.k_)) # is the array storing the maximum message's value
-        S = np.zeros((nr_sample,self.k_)) # is the array storing the most likely states, depending on the max message
+        M = np.zeros((nr_sample, self.k_))  # is the array storing the maximum message's value
+        S = np.zeros((nr_sample, self.k_))  # is the array storing the most likely states, depending on the max message
 
         M[0] = np.log(self.pi0_) + np.log(self.N_[0])
 
         # First part:
         for t in range(1, nr_sample):
-            M[t] = np.log(self.N_[t]) + np.max(np.log(self.A_) + M[t-1], axis=1)
-            S[t] = np.argmax(np.log(self.A_) + M[t-1], axis=1)
+            M[t] = np.log(self.N_[t]) + np.max(np.log(self.A_) + M[t - 1], axis=1)
+            S[t] = np.argmax(np.log(self.A_) + M[t - 1], axis=1)
 
         # Second part:
-        q = np.zeros(nr_sample, dtype=int) #proper array storing the most likely states
-        q[-1] = np.argmax(M[nr_sample-1])
+        q = np.zeros(nr_sample, dtype=int)  # proper array storing the most likely states
+        q[-1] = np.argmax(M[nr_sample - 1])
 
-        for t in range(nr_sample-2, -1, -1):
-            q[t] = S[t+1, q[t+1]]
+        for t in range(nr_sample - 2, -1, -1):
+            q[t] = S[t + 1, q[t + 1]]
 
         return q
 
-
-
     def compute_expectation_(self):
         '''Compute the expectation to check increment'''
-        foo1 = np.inner(self.cond_prob_[0], np.log(self.pi0_))
-        foo2 = np.sum(np.log(self.A_) * np.sum(self.cond_prob_bis_, axis=0))
-        foo3 = np.sum(np.log(self.N_) * self.cond_prob_)
-        E_log_likelihood = foo1 + foo2 + foo3
+        foo = (self.logalpha_ + self.logbeta_)[0]
+        E_log_likelihood = np.max(foo) + np.log(np.sum(np.exp(foo - np.max(foo))))
         return E_log_likelihood
 
     def compute_estimators_(self, X):
@@ -177,11 +165,10 @@ class myHMM(object):
         self.mu_ = gmm.mu_
         self.Sigma_ = gmm.Sigma_
 
-        self.A_ = np.ones((4,4)) * 1/6 + np.identity(4) * 1/3 ## initialization values
-        self.pi0_ = np.array([1/4] * 4) ## initialization values
+        self.A_ = np.ones((4, 4)) * 1 / 6 + np.identity(4) * 1 / 3  # initialization values
+        self.pi0_ = np.array([1 / 4] * 4)  # initialization values
         self.compute_multivariate_normal_matrix(X)
-        self.cond_prob_bis_ = np.zeros((np.shape(X)[0],self.k_,self.k_))
-
+        self.cond_prob_bis_ = np.zeros((np.shape(X)[0], self.k_, self.k_))
 
         self.compute_messages(X)
         self.compute_condition_prob_matrix_(X)
@@ -253,7 +240,6 @@ class myHMM(object):
         labels = np.argmax(proba_cluster, axis=1)
         return labels
 
-
     def plot_pred(self, X, labels, title, plot_kwds, ax=None, figsize=FIGSIZE, cmap=CMAP, alpha=ALPHA, quantile=QUANTILE):
         """plots labeled data, centroids and confidence interval ellipses
 
@@ -274,7 +260,6 @@ class myHMM(object):
         quantile : float (>0 and <1)
             level for confidence interval, must be between 0 and 1
         """
-
 
         def gen_cmap(rgb_color, max_opacity):
             """Generates single-color cmap with decreasing opacity
