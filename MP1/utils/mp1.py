@@ -166,7 +166,7 @@ def plotLossHistory(loss_history, metric):
 
     ax2.set_xlabel('epochs', fontsize=fontsize)
     ax2.set_ylabel('metric', fontsize=fontsize)
-    ax2.plot(epochs, loss_history.history['metric'], '--o', color=color1, label="training")
+    ax2.plot(epochs, loss_history.history[metric], '--o', color=color1, label="training")
     ax2.plot(epochs, loss_history.history['val_' + metric], '-o', color=color2, label="validation")
     ax2.tick_params(axis='x', labelsize=fontsize)
     ax2.tick_params(axis='y', labelsize=fontsize)
